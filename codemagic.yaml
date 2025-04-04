@@ -5,6 +5,12 @@ workflows:
     environment:
       flutter: stable
     scripts:
+      - name: Setup Flutter
+        script: |
+          flutter doctor
+      - name: Go to project directory
+        script: |
+          cd jiffy # Si tu proyecto está en una subcarpeta llamada 'jiffy'
       - name: Build APK
         script: |
           flutter build apk --release
