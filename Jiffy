@@ -1,147 +1,24 @@
-Jiffy: Aplicación de fotografía con música y geolocalización
+import 'package:flutter/material.dart'; import 'package:firebase_core/firebase_core.dart'; import 'package:cloud_firestore/cloud_firestore.dart'; import 'package:firebase_storage/firebase_storage.dart'; import 'package:file_picker/file_picker.dart'; import 'package:geolocator/geolocator.dart'; import 'package:provider/provider.dart'; import 'package:just_audio/just_audio.dart';
 
-1. Código Flutter (main.dart)
+void main() async { WidgetsFlutterBinding.ensureInitialized(); await Firebase.initializeApp(); runApp(MyApp()); }
 
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:just_audio/just_audio.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:io';
+class MyApp extends StatelessWidget { @override Widget build(BuildContext context) { return MaterialApp( title: 'Jiffy', theme: ThemeData( primarySwatch: Colors.blue, ), home: HomePage(), ); } }
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(JiffyApp());
-}
+class HomePage extends StatefulWidget { @override _HomePageState createState() => _HomePageState(); }
 
-class JiffyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-      home: JiffyHomePage(),
-    );
-  }
-}
+class _HomePageState extends State<HomePage> { final FirebaseFirestore _firestore = FirebaseFirestore.instance; final FirebaseStorage _storage = FirebaseStorage.instance; final AudioPlayer _audioPlayer = AudioPlayer();
 
-class JiffyHomePage extends StatefulWidget {
-  @override
-  _JiffyHomePageState createState() => _JiffyHomePageState();
-}
+Future<void> _uploadPhoto() async { FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image); if (result != null) { String fileName = result.files.single.name; var fileBytes = result.files.single.bytes; if (fileBytes != null) { await _storage.ref('photos/$fileName').putData(fileBytes); String downloadUrl = await _storage.ref('photos/$fileName').getDownloadURL(); Position position = await Geolocator.getCurrentPosition(); await _firestore.collection('photos').add({ 'url': downloadUrl, 'latitude': position.latitude, 'longitude': position.longitude, 'timestamp': FieldValue.serverTimestamp(), }); } } }
 
-class _JiffyHomePageState extends State<JiffyHomePage> {
-  final ImagePicker _picker = ImagePicker();
-  final FirebaseStorage _storage = FirebaseStorage.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  
-  XFile? _image;
-  String? _imageUrl;
-  String? _musicUrl;
-  String? _description;
-  Position? _position;
+@override Widget build(BuildContext context) { return Scaffold( appBar: AppBar(title: Text('Jiffy')), body: Center( child: Column( mainAxisAlignment: MainAxisAlignment.center, children: [ ElevatedButton( onPressed: _uploadPhoto, child: Text('Subir Foto'), ), ], ), ), ); } }
 
-  Future<void> _pickImage() async {
-    final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
-      setState(() => _image = pickedImage);
-    }
-  }
+flutter: uses-material-design: true
 
-  Future<void> _uploadImage() async {
-    if (_image == null) return;
-    final ref = _storage.ref().child("images/${DateTime.now().millisecondsSinceEpoch}.jpg");
-    await ref.putFile(File(_image!.path));
-    final url = await ref.getDownloadURL();
-    setState(() => _imageUrl = url);
-  }
+assets: - assets/images/ - assets/music/
 
-  Future<void> _getLocation() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    setState(() => _position = position);
-  }
+dependencies: flutter: sdk: flutter flutter_map: ^0.14.0 geolocator: ^9.0.2 provider: ^6.0.5 firebase_core: ^2.14.0 firebase_storage: ^11.2.3 cloud_firestore: ^4.8.4 file_picker: ^5.3.2 just_audio: ^0.9.34
 
-  Future<void> _saveToFirestore() async {
-    if (_imageUrl != null && _description != null) {
-      await _firestore.collection("posts").add({
-        "image": _imageUrl,
-        "music": _musicUrl,
-        "description": _description,
-        "location": _position != null ? GeoPoint(_position!.latitude, _position!.longitude) : null,
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Jiffy")),
-      body: Column(
-        children: [
-          _image != null ? Image.file(File(_image!.path)) : Placeholder(fallbackHeight: 200),
-          TextField(
-            decoration: InputDecoration(hintText: "Descripción"),
-            onChanged: (value) => _description = value,
-          ),
-          TextField(
-            decoration: InputDecoration(hintText: "URL de la música"),
-            onChanged: (value) => _musicUrl = value,
-          ),
-          ElevatedButton(onPressed: _pickImage, child: Text("Seleccionar imagen")),
-          ElevatedButton(onPressed: _uploadImage, child: Text("Subir imagen")),
-          ElevatedButton(onPressed: _getLocation, child: Text("Obtener ubicación")),
-          ElevatedButton(onPressed: _saveToFirestore, child: Text("Guardar")),
-        ],
-      ),
-    );
-  }
-}
-
-2. Archivo codemagic.yaml
-
-Crea este archivo en la raíz del proyecto con el siguiente contenido:
-
-workflows:
-  build-android:
-    name: Build Android APK
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    environment:
-      flutter: stable
-    scripts:
-      - echo "Iniciando compilación de Jiffy"
-      - flutter clean
-      - flutter pub get
-      - flutter build apk --release
-    artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk
+workflows: android-app: name: Android Build max_build_duration: 60 instance_type: mac_mini environment: flutter: stable groups: - google_credentials scripts: - flutter clean - flutter pub get - flutter build apk --release artifacts: - build/app/outputs/flutter-apk/app-release.apk publishing: email: recipients: - "TU_CORREO@EMAIL.COM"
 
 
----
-
-3. Asegurar que Codemagic lo detecte
-
-1. En tu repositorio de GitHub, asegúrate de que codemagic.yaml está en la raíz.
-
-
-2. Si ya lo subiste y sigue sin detectarlo en Codemagic:
-
-Elimina la app de Codemagic.
-
-Vuelve a agregarla y conéctala con GitHub.
-
-Haz clic en "Check for configuration file".
-
-
-
-3. Inicia la compilación.
-
-
-
-Si sigue fallando, dime exactamente qué mensaje aparece. Con eso podré darte una solución más precisa.
 
