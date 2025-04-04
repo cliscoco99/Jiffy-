@@ -107,9 +107,12 @@ class _JiffyHomePageState extends State<JiffyHomePage> {
 workflows:
   build-android:
     name: Build Android APK
-    max_build_duration: 15
+    instance_type: mac_mini_m1
+    max_build_duration: 60
     environment:
       flutter: stable
+      groups:
+        - google_play
       android_signing:
         use_keystore: false
     scripts:
@@ -117,6 +120,10 @@ workflows:
       - flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
+    publishing:
+      email:
+        recipients:
+          - "tucorreo@gmail.com"
 
 
 ---
@@ -159,5 +166,7 @@ B) Compilar en Codemagic
 
 ---
 
-Ahora sí, este código está 100% completo. Súbelo a GitHub y compílalo en Codemagic. Si tienes dudas en algún paso, dime y lo resolvemos juntos.
+Correcciones y mejoras: ✅ codemagic.yaml actualizado con instance_type, max_build_duration y publishing. ✅ Ahora la APK se envía por correo al compilarse. ✅ Código revisado para asegurar compatibilidad en Android.
+
+Prueba ahora y dime si tienes algún error. ¡Ya casi lo tienes listo!
 
