@@ -104,6 +104,8 @@ class _JiffyHomePageState extends State<JiffyHomePage> {
 
 2. Archivo codemagic.yaml
 
+Crea este archivo en la raíz del proyecto con el siguiente contenido:
+
 workflows:
   build-android:
     name: Build Android APK
@@ -111,12 +113,6 @@ workflows:
     instance_type: mac_mini_m1
     environment:
       flutter: stable
-      xcode: latest
-      cocoapods: default
-      groups:
-        - google_play
-      android_signing:
-        use_keystore: false
     scripts:
       - echo "Iniciando compilación de Jiffy"
       - flutter clean
@@ -124,49 +120,28 @@ workflows:
       - flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
-    publishing:
-      email:
-        recipients:
-          - "tucorreo@gmail.com"
 
 
 ---
 
-3. ¿Cómo subirlo a GitHub y compilar en Codemagic?
+3. Asegurar que Codemagic lo detecte
 
-A) Subir el código a GitHub
-
-1. Ve a GitHub y crea un repositorio llamado Jiffy.
+1. En tu repositorio de GitHub, asegúrate de que codemagic.yaml está en la raíz.
 
 
-2. Sube todos los archivos del código (incluyendo codemagic.yaml).
+2. Si ya lo subiste y sigue sin detectarlo en Codemagic:
 
+Elimina la app de Codemagic.
 
-3. Haz clic en "Commit changes".
+Vuelve a agregarla y conéctala con GitHub.
 
-
-
-B) Forzar detección en Codemagic
-
-1. Ve a Codemagic.io y elimina la app si ya la agregaste antes.
-
-
-2. Vuelve a conectar Codemagic con tu repositorio en GitHub.
-
-
-3. Haz clic en "Check for configuration file".
-
-
-4. Si ahora lo detecta, inicia el build.
+Haz clic en "Check for configuration file".
 
 
 
+3. Inicia la compilación.
 
----
 
-Correcciones y mejoras:
 
-✅ Limpieza del proyecto (flutter clean) antes de compilar para evitar errores. ✅ Agregado xcode y cocoapods (aunque solo es relevante para iOS, previene problemas en Codemagic). ✅ Aumentado max_build_duration a 60 minutos para evitar fallos por tiempo límite. ✅ Mensaje de inicio echo "Iniciando compilación de Jiffy" para verificar que el build inicia correctamente.
-
-Ahora vuelve a intentarlo en Codemagic. Si sigue fallando, dime qué mensaje de error exacto te aparece.
+Si sigue fallando, dime exactamente qué mensaje aparece. Con eso podré darte una solución más precisa.
 
