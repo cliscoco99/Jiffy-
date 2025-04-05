@@ -1,35 +1,21 @@
 workflows:
   android-app:
     name: Android Build
-    max_build_duration: 60 # Duración máxima de la compilación en minutos.
+    max_build_duration: 60 # Duración máxima de la compilación en minutos
     environment:
-      flutter: stable # Usar la versión estable de Flutter.
-      os: macos # Usar un sistema operativo Mac para compilar, ya que es más compatible con las compilaciones de Flutter.
+      flutter: stable # Usar la versión estable de Flutter
     scripts:
       - name: Set up Flutter
         script: |
-          flutter doctor # Verifica el entorno de Flutter para asegurarse de que todo esté en orden.
+          flutter doctor # Verificar el entorno de Flutter
       - name: Get dependencies
         script: |
-          flutter pub get # Instalar todas las dependencias necesarias.
+          flutter pub get # Instalar las dependencias necesarias
       - name: Clean build
         script: |
-          flutter clean # Limpiar cualquier archivo temporal o de caché que pueda estar causando problemas.
+          flutter clean # Limpiar cualquier archivo temporal de compilación anterior
       - name: Build APK
         script: |
-          flutter build apk --release --no-sound-null-safety # Construir la APK de lanzamiento. Añadido `--no-sound-null-safety` para evitar problemas de seguridad de nulos si es necesario.
+          flutter build apk --release --no-sound-null-safety # Construir el APK en modo release
     artifacts:
-      - build/app/outputs/flutter-apk/app-release.apk # Ruta al archivo APK de la compilación.
-
-    # Opcionalmente, podemos agregar una configuración de notificaciones para obtener alertas.
-    notifications:
-      email:
-        - 'tu-correo@dominio.com' # Reemplaza con tu correo para recibir notificaciones.
-      slack:
-        webhook: 'https://hooks.slack.com/services/...' # Configura un webhook de Slack para recibir notificaciones en tu canal de Slack.
-
-    # Aquí puedes añadir un paso de prueba si lo necesitas.
-    test:
-      name: Flutter Test
-      script: |
-        flutter test # Realiza pruebas unitarias antes de la compilación.
+      - build/app/outputs/flutter-apk/app-release.apk # Ruta al archivo APK de la compilación
