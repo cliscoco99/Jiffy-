@@ -1,0 +1,8 @@
+- your_project/
+  - android/
+  - ios/
+  - lib/
+  - build/
+  - pubspec.yaml
+  - codemagic.yaml
+  - README.md
